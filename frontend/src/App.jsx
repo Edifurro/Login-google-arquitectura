@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ProductsPage } from './pages/ProductsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ProductEditForm from './pages/ProductPageEdit';
+import ProductViewPage from './pages/ProductPage';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           }
         />
          <Route path="/products/edit/:id" element={<ProductEditForm />} />
+         <Route path="/product/:id" element={<ProductViewPage />} />
       </Routes>
     </Router>
   );

@@ -7,7 +7,7 @@ const getProducts = async (req, res) => {
       SELECT 
         id, status, imagen, codigo, titulo, 
         descripcion, precio, existencias, categoriaID, 
-        CreatedDate 
+        CreatedDate , videos
       FROM productos 
       WHERE is_deleted = 0
       ORDER BY CreatedDate ASC
@@ -15,10 +15,17 @@ const getProducts = async (req, res) => {
     
     const [products] = await pool.query(query);
     
+    const productsParsed = products.map(product => {
+      return {
+        ...product,
+        videos: product.videos ? JSON.parse(product.videos) : []
+      };
+    });
+
     res.json({
       success: true,
       count: products.length,
-      data: products
+      data: productsParsed
     });
 
   } catch (error) {
@@ -38,7 +45,7 @@ const getProductById = async (req, res) => {
       `SELECT 
         id, status, imagen, codigo, titulo, 
         descripcion, precio, existencias, categoriaID, 
-        CreatedDate 
+        CreatedDate, videos
        FROM productos 
        WHERE id = ? AND is_deleted = 0`,
       [id]
@@ -51,9 +58,14 @@ const getProductById = async (req, res) => {
       });
     }
 
+    const product = {
+      ...rows[0],
+      videos: rows[0].videos ? JSON.parse(rows[0].videos) : []
+    };
+
     res.json({
       success: true,
-      data: rows[0]
+      data: product
     });
 
   } catch (error) {
@@ -75,7 +87,8 @@ const updateProduct = async (req, res) => {
     descripcion,
     precio,
     existencias,
-    categoriaID
+    categoriaID,
+    videos = []
   } = req.body;
 
   // Validación básica de campos requeridos
@@ -111,9 +124,12 @@ const updateProduct = async (req, res) => {
         descripcion = ?,
         precio = ?,
         existencias = ?,
-        categoriaID = ?
+        categoriaID = ?,
+        videos = ?
       WHERE id = ? AND is_deleted = 0
     `;
+    
+    const videosJson = JSON.stringify(videos);
 
     const [result] = await pool.query(updateQuery, [
       status || 0,
@@ -124,6 +140,7 @@ const updateProduct = async (req, res) => {
       precio,
       existencias,
       categoriaID || null,
+      videosJson || [],
       id
     ]);
 
